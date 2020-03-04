@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import AsyncStorage from '@react-native-community/async-storage';
+import PropTypes from 'prop-types';
 import { Keyboard, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import api from '../../services/api';
 
@@ -17,9 +18,20 @@ import {
   ProfileButton,
   ProfileButtonText,
 } from './styles';
-import '../../config/ReactotronConfig';
 
 export default class Main extends Component {
+  // eslint-disable-next-line react/sort-comp
+  static navigationOptions = {
+    title: 'Usuários',
+  };
+
+  // eslint-disable-next-line react/static-property-placement
+  static propTypes = {
+    navigation: PropTypes.shape({
+      navigate: PropTypes.func,
+    }).isRequired,
+  };
+
   // eslint-disable-next-line react/state-in-constructor
   state = {
     newUser: '',
@@ -35,10 +47,10 @@ export default class Main extends Component {
     }
   }
 
-  async componentDidUpdate(_, prevstate) {
+  componentDidUpdate(_, prevState) {
     const { users } = this.state;
 
-    if (prevstate.users !== users) {
+    if (prevState.users !== users) {
       AsyncStorage.setItem('users', JSON.stringify(users));
     }
   }
@@ -48,7 +60,7 @@ export default class Main extends Component {
 
     this.setState({ loading: true });
 
-    const response = await api.get(`users/${newUser}`);
+    const response = await api.get(`/users/${newUser}`);
 
     const data = {
       name: response.data.name,
@@ -66,8 +78,15 @@ export default class Main extends Component {
     Keyboard.dismiss();
   };
 
+  handleNavigate = user => {
+    const { navigation } = this.props;
+
+    navigation.navigate('User', { user });
+  };
+
   render() {
     const { users, newUser, loading } = this.state;
+
     return (
       <Container>
         <Form>
@@ -98,7 +117,7 @@ export default class Main extends Component {
               <Name>{item.name}</Name>
               <Bio>{item.bio}</Bio>
 
-              <ProfileButton onPress={() => {}}>
+              <ProfileButton onPress={() => this.handleNavigate(item)}>
                 <ProfileButtonText>Ver perfil</ProfileButtonText>
               </ProfileButton>
             </User>
@@ -108,7 +127,3 @@ export default class Main extends Component {
     );
   }
 }
-
-Main.navigationOptions = {
-  title: 'Olá mundo',
-};
